@@ -11,7 +11,11 @@
 
 ```map( lambda x: x*x, [y for y in range(10)] )```
 
+```fib = lambda n: 1 if n <= 2 else fib(n - 1) + fib(n - 2)```
+
 #### 函数式编程
 > * 不依赖于外部的数据，而且也不改变外部数据的值，而是返回一个新的值给你
 > * 把函数当成变量来用，关注于描述问题而不是怎么实现
-> * Python中的除了map和reduce外，还有一些别的如filter, find, all, any的函数做辅助，可以让代码更简洁易读
+> * Python中的除了 `map` 和 `reduce` 外，还有一些如 `filter`, `find`, `all`, `any`函数做辅助，可以让代码更简洁易读
+
+####
