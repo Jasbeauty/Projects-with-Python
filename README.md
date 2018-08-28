@@ -38,20 +38,20 @@ func = f1(arg)(f2(func))
 ```
 def bread(func):
     def wrapper():
-        print "</''''''\>"
+        print("</''''''\>")
         func()
-        print "<\______/>"
+        print("<\______/>")
     return wrapper
 
 def ingredients(func):
     def wrapper():
-        print "#tomatoes#"
+        print("#tomatoes#")
         func()
-        print "~salad~"
+        print("~salad~")
     return wrapper
 
 def sandwich(food="--ham--"):
-    print food
+    print(food)
 
 sandwich()
 #outputs: --ham--
@@ -70,7 +70,7 @@ sandwich()
 @bread
 @ingredients
 def sandwich(food="--ham--"):
-    print food
+    print(food)
 
 sandwich()
 #outputs:
@@ -85,7 +85,7 @@ sandwich()
 @ingredients
 @bread
 def strange_sandwich(food="--ham--"):
-    print food
+    print(food)
 
 strange_sandwich()
 #outputs:
@@ -95,3 +95,5 @@ strange_sandwich()
 #<\______/>
 # ~salad~
 ```
+
+#### Python的函数参数传递
