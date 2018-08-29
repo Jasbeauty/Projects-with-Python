@@ -97,3 +97,126 @@ strange_sandwich()
 ```
 
 #### Python的函数参数传递
+* 不可变对象：int，string，float，tuple
+```
+>>> a='abcc'
+>>> a.replace('c','k')
+'abkk'
+>>> a
+'abcc'
+```
+
+```
+a = 1
+def fun(a):
+    print(a)  # 1
+    print(id(a))  # 4366880800
+    a = 2
+    print(id(a))   # 4366880832
+print(id(a))  # 4366880800
+fun(a)
+print(a)  # 1
+```
+* 可变对象：list，dictionary, set
+```
+>>> list = [1, 2, 3]
+>>> list2 = list
+>>> list2.remove(1)
+>>> list
+[2, 3]
+>>>
+>>>a = [1]
+>>>b = a
+>>>b[0] = 2
+>>>a
+[2]
+```
+
+```
+a = [1, 2, 3]
+
+def fun(a):
+    print(a)  # [1, 2, 3]
+    print(id(a))  # 4499711048
+
+    a.append(2)
+    print(id(a))  # 4499711048
+
+print(id(a))  # 4499711048
+fun(a)
+print(a)  # [1, 2, 3, 2]
+```
+
+###### Java传参
+* 基本数据类型
+> 包括：byte, short, int, long, char, float, double, Boolean, returnAddress
+* 引用数据类型
+> 包括：类类型，接口类型和数组
+* 值类型
+> 对象本身不允许修改，数值的修改实际上是让变量指向了一个新的内存地址
+* 引用类型
+> 对象本身可以修改
+
+#### Python中的元类 ([metaclass](https://stackoverflow.com/questions/100003/what-are-metaclasses-in-python))
+
+#### 实例方法、静态方法、类方法
+```
+class MyClass:
+    def method(self):
+        return 'instance method called', self
+
+    @classmethod
+    def classmethod(cls):
+        return 'class method called', cls
+
+    @staticmethod
+    def staticmethod():
+        return 'static method called'
+```
+* 静态方法是指类中无需实例参与即可调用的方法(不需要self参数)，直接在类之后使用`.`号运算符调用方法
+```
+class ClassA(object):
+
+    @staticmethod
+    def func_a():
+        print('Hello Python')
+
+if __name__ == '__main__':
+
+    # 直接调用
+    ClassA.func_a()
+```
+* 类方法传入的第一个参数为cls，是类本身。并且，类方法可以通过类直接调用，或通过实例直接调用。但无论哪种调用方式，最左侧传入的参数一定是类本身
+```
+class ClassA(object):
+
+    @classmethod
+    def func_a(cls):
+        print(type(cls), cls)
+
+
+if __name__ == '__main__':
+
+    # 直接调用
+    ClassA.func_a()
+
+    # 通过实例调用
+    ca = ClassA()
+    ca.func_a()
+```
+* 实例方法需要将类实例化后调用，如果使用类直接调用实例方法,需要显式地将实例作为参数传入
+```
+class ClassA(object):
+
+    def func_a(self):
+        print('Hello Python')
+
+if __name__ == '__main__':
+
+    # 使用实例调用实例方法
+    ca = ClassA()
+    ca.func_a()
+
+    # 如果使用类直接调用实例方法,需要显式地将实例作为参数传入
+    ClassA.func_a(ca)
+```
