@@ -158,6 +158,7 @@ print(a)  # [1, 2, 3, 2]
 > 对象本身可以修改
 
 #### Python中的元类 ([metaclass](https://stackoverflow.com/questions/100003/what-are-metaclasses-in-python))
+> ORM（对象关系映射）中比较常用
 
 #### 实例方法、静态方法、类方法
 ```
@@ -220,3 +221,147 @@ if __name__ == '__main__':
     # 如果使用类直接调用实例方法,需要显式地将实例作为参数传入
     ClassA.func_a(ca)
 ```
+
+#### 类变量和实例变量
+* 类变量是可在类的所有实例之间共享的值，它们不是单独分配给每个实例的
+* 实例变量是实例化之后，每个实例单独拥有的变量
+```
+class Test(object):
+    # 类变量
+    num = 0
+
+    def __init__(self, name):
+        self.name = name
+        Test.num += 1
+
+
+if __name__ == '__main__':
+    print(Test.num)  # 0
+    t1 = Test('jas')
+    print(Test.num)  # 1
+    t2 = Test('fortunate')
+    print(Test.num)  # 2
+
+    # 在实例的作用域里把类变量的引用改变了, 就变成了一个实例变量, 所以 t1.num 和 t2.num 输出2
+    print(t1.name, t1.num)  # jas 2
+    print(t2.name, t2.num)  # fortunate 2
+```
+
+```
+class Person:
+    name="aaa"
+
+p1=Person()
+p2=Person()
+p1.name="bbb"
+print(p1.name)  # bbb
+print(p2.name)  # aaa
+print(Person.name)  # aaa
+```
+对比
+```
+class Person:
+    name=[]
+
+p1=Person()
+p2=Person()
+p1.name.append(1)
+print(p1.name)  # [1]
+print(p2.name)  # [1]
+print(Person.name)  # [1]
+```
+
+#### Python自省
+> 自省就是用面向对象的语言写的程序在运行时, 就能知道对象的类型
+
+#### 字典推导式
+`d = {key: value for (key, value) in iterable}`
+```
+@字典推导式
+#city_rate.txt 存储数据如下
+110000  0.88
+120000  0.65
+130100  0.65
+130200  0.65
+130300  0.65
+
+#将文件中的数据转换成字典（键值对）方法
+#这个方法在python3中可用，在python2.7中用不了会出错
+code_to_rate = {k:v for k,v in [line.strip().split('\t') for line in open("city_rate.txt").readlines()]}
+
+# 输出
+{'110000': '0.88', '120000': '0.65', '130100': '0.65', '130200': '0.65', '130300': '0.65'}
+```
+
+#### Python中单下划线和双下划线
+* 以单下划线开头 `_private` ，表示这是一个保护成员，只有类对象和子类对象自己能访问到这些变量。以单下划线开头的变量和函数被默认当作是内部函数
+* 双下划线开头 `__private` ，表示为私有成员，只允许类本身访问，子类也不行
+* 以单下划线结尾 `private_` , 仅仅是为了区别该名称与关键词
+* 双下划线开头，双下划线结尾 `__private__` 是一种约定，表示Python内部的名字，用来区别其他用户自定义的命名,以防冲突
+```
+class Myclass():
+    def __init__(self):
+        self.__superprivate = 'hello'
+        self._semiprivate = ',world'
+
+
+mc = Myclass()
+print(mc.__superprivate)
+# AttributeError: 'Myclass' object has no attribute '__superprivate'
+
+print(mc._semiprivate)
+# ,world
+
+print(mc.__dict__)
+# {'_Myclass__superprivate': 'hello', '_semiprivate': ',world'}
+```
+
+#### 字符串格式化: %和 .format
+.format 更加实用
+```
+sub1 = 'hi'
+a = '{}, jasmine'.format(sub1)
+print(a)    # hi, jasmine
+```
+
+#### 迭代器和生成器
+* Iterables
+```
+>>> mylist = [x*x for x in range(3)]
+>>> for i in mylist:
+...    print(i)
+0
+1
+4
+```
+> These iterables are handy because you can read them as much as you wish, but you store all the values in memory and this is not always what you want when you have a lot of values
+* Generators
+```
+>>> mygenerator = (x*x for x in range(3))
+>>> for i in mygenerator:
+...    print(i)
+0
+1
+4
+```
+> Generators are iterators, a kind of iterable you can only iterate over once. Generators do not store all the values in memory, they generate the values on the fly:
+It is just the same except you used `( )` instead of `[ ]`. BUT, you cannot perform for i in mygenerator a second time since generators can only be used once
+* Yield
+```
+>>> def createGenerator():
+...    mylist = range(3)
+...    for i in mylist:
+...        yield i*i
+...
+>>> mygenerator = createGenerator() # create a generator
+>>> print(mygenerator) # mygenerator is an object!
+<generator object createGenerator at 0xb7555c34>
+>>> for i in mygenerator:
+...     print(i)
+0
+1
+4
+```
+> * yield is a keyword that is used like return, except the function will return a generator
+> * The first time the for calls the generator object created from your function, it will run the code in your function from the beginning until it hits yield, then it'll return the first value of the loop. Then, each other call will run the loop you have written in the function one more time, and return the next value, until there is no value to return.
+The generator is considered empty once the function runs, but does not hit yield anymore. It can be because the loop had come to an end, or because you do not satisfy an "if/else" anymore
