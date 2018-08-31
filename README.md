@@ -317,8 +317,8 @@ print(mc.__dict__)
 # {'_Myclass__superprivate': 'hello', '_semiprivate': ',world'}
 ```
 
-#### 字符串格式化: %和 .format
-.format 更加实用
+#### 字符串格式化: `%` 和 `.format`
+`.format` 更加实用
 ```
 sub1 = 'hi'
 a = '{}, jasmine'.format(sub1)
