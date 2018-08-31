@@ -175,6 +175,7 @@ class MyClass:
         return 'static method called'
 ```
 * 静态方法是指类中无需实例参与即可调用的方法(不需要self参数)，直接在类之后使用`.`号运算符调用方法
+> 与类里面的其他属性，方法没有关系
 ```
 class ClassA(object):
 
@@ -325,6 +326,7 @@ print(a)    # hi, jasmine
 ```
 
 #### 迭代器和生成器
+###### 通过列表生成式，可以直接创建一个列表。但是，受到内存限制，列表容量肯定是有限的。比如我们只需要访问前面的几个元素，后面大部分元素所占的空间都是浪费的。因此，没有必要创建完整的列表（节省大量内存空间）。在Python中，我们可以采用生成器 Generator：边循环，边计算
 * Iterables
 ```
 >>> mylist = [x*x for x in range(3)]
@@ -365,3 +367,202 @@ It is just the same except you used `( )` instead of `[ ]`. BUT, you cannot perf
 > * yield is a keyword that is used like return, except the function will return a generator
 > * The first time the for calls the generator object created from your function, it will run the code in your function from the beginning until it hits yield, then it'll return the first value of the loop. Then, each other call will run the loop you have written in the function one more time, and return the next value, until there is no value to return.
 The generator is considered empty once the function runs, but does not hit yield anymore. It can be because the loop had come to an end, or because you do not satisfy an "if/else" anymore
+> * yield返回执行结果并不中断程序执行，return在返回执行结果的同时中断程序执行
+
+#### `*args` and `**kwargs`
+* `*args` 可以传递任意数量的参数
+```
+>>> def print_everything(*args):
+        for count, thing in enumerate(args):
+...         print '{0}. {1}'.format(count, thing)
+...
+>>> print_everything('apple', 'banana', 'cabbage')
+0. apple
+1. banana
+2. cabbage
+```
+* `**kwargs` 允许你使用没有事先定义的参数名
+```
+>>> def table_things(**kwargs):
+...     for name, value in kwargs.items():
+...         print '{0} = {1}'.format(name, value)
+...
+>>> table_things(apple = 'fruit', cabbage = 'vegetable')
+cabbage = vegetable
+apple = fruit
+```
+* `*args` 和 `**kwargs` 可以同时在函数的定义中,但是 `*args` 必须在 `**kwargs` 前面
+* 调用函数时也可以用 `*` 和 `**` 语法
+```
+>>> def print_three_things(a, b, c):
+...     print( 'a = {0}, b = {1}, c = {2}'.format(a,b,c))
+...
+>>> mylist = ['aardvark', 'baboon', 'cat']
+>>> print_three_things(*mylist)
+a = aardvark, b = baboon, c = cat
+```
+
+#### 鸭子类型 Duck typing
+```
+class Duck:
+    def quack(self):
+        print("Quaaaaaack!")
+
+
+class Bird:
+    def quack(self):
+        print("bird imitate duck.")
+
+
+class Dog:
+    def quack(self):
+        print("dog imitate duck.")
+
+
+def in_the_forest(duck):
+    duck.quack()
+
+
+duck = Duck()
+bird = Bird()
+dog = Dog()
+
+for x in [duck, bird, dog]:
+    in_the_forest(x)
+
+#  输出
+# Quaaaaaack!
+# bird imitate duck.
+# dog imitate duck.
+```
+> `bird` 和`dog` 类拥有和 `duck` 类一样的方法，当有一个函数调用 `duck` 类，并利用到了 `quack()` 方法，我们传入 `bird` 和 `dog` 类一样可以运行，函数并不会检查对象的类型是不是 `duck`，只用它拥有 `quack()`方法，就可以正常的被调用
+
+#### Python中无需函数重载
+
+#### old-style and new-style classes
+> No matter if you subclass from object or not, classes are new-style in Python 3
+
+#### `__new__` 和 `__init__` 的区别
+* Use `__new__` when you need to control the creation of a new instance. Use `__init__` when you need to control initialization of a new instance
+* `__new__` is the first step of instance creation. It's called first, and is responsible for returning a new instance of your class. In contrast, `__init__` doesn't return anything; it's only responsible for initializing the instance after it's been created
+* `__new__` is static class method, while `__init__` is instance method.  `__new__` has to create the instance first, so `__init__` can initialize it. Note that `__init__` takes `self` as parameter. Until you create instance there is no `self`
+* `__new__()` 在 `__init__()` 之前被调用，用于生成实例对象
+> 可以分别使用 `__metaclass__` , `__new__` 和 `__init__` 来分别在类创建,实例创建和实例初始化
+```
+class A(object):
+    _dict = dict()
+
+    def __new__(cls):
+        if 'key' in A._dict:
+            print("EXISTS")
+            return A._dict['key']
+        else:
+            print("NEW")
+            return super(A, cls).__new__(cls)
+
+    def __init__(self):
+        print("INIT")
+        A._dict['key'] = self
+        print("")
+
+a1 = A()
+a2 = A()
+a3 = A()
+
+#  输出
+NEW
+INIT
+
+EXISTS
+INIT
+
+EXISTS
+INIT
+```
+
+#### 单例模式
+主要目的是确保某一个类只有一个实例存在
+> Python 的模块是天然的单例模式，在大部分情况下是够用的
+* 使用模块
+```
+# mysingleton.py
+class My_Singleton(object):
+    def foo(self):
+        pass
+
+my_singleton = My_Singleton()
+```
+```
+# to use
+from mysingleton import my_singleton
+
+my_singleton.foo()
+```
+* 使用 `__new__`
+```
+class Singleton(object):
+    _instance = None
+    def __new__(cls, *args, **kw):
+        if not cls._instance:
+            cls._instance = super(Singleton, cls).__new__(cls, *args, **kw)
+        return cls._instance
+
+class MyClass(Singleton):
+    a = 1
+```
+```>>> one = MyClass()
+>>> two = MyClass()
+>>> one == two
+True
+>>> one is two
+True
+>>> id(one), id(two)
+(4303862608, 4303862608)
+```
+* 使用装饰器
+```
+from functools import wraps
+
+def singleton(cls):
+    instances = {}
+    @wraps(cls)
+    def getinstance(*args, **kw):
+        if cls not in instances:
+            instances[cls] = cls(*args, **kw)
+        return instances[cls]
+    return getinstance
+```
+```
+@singleton
+class MyClass(object):
+    a = 1
+```
+* 使用元类 metaclass
+```
+class Singleton(type):
+    _instances = {}
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
+
+# Python2
+class MyClass(object):
+    __metaclass__ = Singleton
+
+# Python3
+# class MyClass(metaclass=Singleton):
+#    pass
+```
+
+#### Python中的作用域
+当 Python 遇到一个变量, 会按照这样的顺序进行搜索：本地作用域（Local）→ 当前作用域被嵌入的本地作用域（Enclosing locals）→ 全局/模块作用域（Global）→ 内置作用域（Built-in）
+
+#### GIL（Global Interpreter Lock）线程全局锁
+* Python为了保证线程安全而采取的独立线程运行的限制，就是一个核只能在同一时间运行一个线程
+* 对于io密集型任务，python的多线程起到作用，但对于cpu密集型任务，python的多线程几乎占不到任何优势，还有可能因为争夺资源而变慢
+
+#### 协程
+协程是进程和线程的升级版, 进程和线程都面临着内核态和用户态的切换问题而耗费许多切换时间, 而协程就是用户自己控制切换的时机, 不再需要陷入系统的内核态
+> Python里最常见的yield就是协程的思想
+
