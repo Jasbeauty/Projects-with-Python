@@ -566,3 +566,389 @@ class MyClass(object):
 协程是进程和线程的升级版, 进程和线程都面临着内核态和用户态的切换问题而耗费许多切换时间, 而协程就是用户自己控制切换的时机, 不再需要陷入系统的内核态
 > Python里最常见的yield就是协程的思想
 
+#### 闭包
+* global 关键字
+```
+>>> x=1
+def mfun():
+    global x
+    x=2
+    print(x)
+>>> mfun()
+2
+```
+* 内嵌函数
+> 内部函数的的作用域在外部函数作用域之内，只能在外部函数内调用内部函数
+```
+def outside():
+    print("正在调用outside")
+    def inside():
+        print("正在调用inside")
+    inside()
+outside()
+inside()#这句话是错的
+
+
+# 输出
+
+正在调用outside
+正在调用inside
+Traceback (most recent call last):
+  File "C:\Users\ENVY\Desktop\learnning Python\text.py", line 7, in <module>
+    inside()
+NameError: name 'inside' is not defined
+```
+* 闭包（closure）
+
+在一个外函数中定义了一个内函数，内函数里运用了外函数的临时变量，并且外函数的返回值是内函数的引用，这样就构成了一个闭包
+```
+def line_conf():
+    b = 15
+    def line(x):
+        return 2*x+b
+    return line       # return a function object
+
+b = 5
+my_line = line_conf()
+print(my_line(5))    # 返回25
+```
+> 在内部函数中只能对外部函数的局部变量进行访问，但是不能修改，如果需要修改则需要用到nonlocal关键字
+```
+def line_conf():
+    b = 15
+    def line(x):
+        nonlocal b
+        b=20
+        return 2*x+b
+    return line       # return a function object
+
+b = 5
+my_line = line_conf()
+print(my_line(5))     #返回30
+```
+
+#### Python里的拷贝
+* 浅copy()
+
+对于浅copy来说，第一层创建的是新的内存地址。而从第二层开始，指向的是同一个内存地址，所以对于第二层以及更深的层数来说，保持一致性
+```
+# 浅copy中，列表、字典都是一样的
+
+ l1 = [1,2,3,4]
+ l2 = l1.copy()  # id内存地址不一样，创建了两个空间
+ l1.append('barry')  # 一个改变，copy不改变
+
+ print(l1,id(l1))  # [1, 2, 3, 4, 'barry'] 41709256
+ print(l2,id(l2))  # [1, 2, 3, 4] 41708616
+```
+> 浅copy()和赋值不一样:
+```
+ l1 = [1,[22,33,44],3,4,]
+ l2 = l1.copy()
+ l1[0] = 111
+
+ print(l1)  # [111, [22, 33, 44], 3, 4]
+ print(l2)  # [1, [22, 33, 44], 3, 4]
+```
+> 第一层都是独立的的，从第二层开始都是是公用的，改一个都会变:
+```
+# 有嵌套层，列表都会添加。整体的内存地址不一致，但嵌套的内存地址一样
+ l1 = [1,[22,33,44],3,4,]
+ l2 = l1.copy()
+ l1[1].append('55')
+
+ print(l1,id(l1),id(l1[1]))
+ #[1, [22, 33, 44, '55'], 3, 4] 35417160 35417800
+ print(l2,id(l2),id(l2[1]))
+ #[1, [22, 33, 44, '55'], 3, 4] 35417864 35417800
+```
+* 深copy.deepcopy()
+
+对于深copy来说，两个是完全独立的，改变任意一个的元素（无论是多少层），另一个绝不会改变
+```
+import copy  # 先引入模块
+l1 = [1,[22,33,44],3,4,]
+l2 = copy.deepcopy(l1)
+# 改变第一层
+l1[0] = 111
+print(l1)  # [111, [22, 33, 44], 3, 4]
+print(l2)  # [1, [22, 33, 44], 3, 4]
+  # 改变第二层
+l1[1].append('barry')
+print(l1)  # [111, [22, 33, 44, 'barry'], 3, 4]
+print(l2)  # [1, [22, 33, 44], 3, 4]
+```
+
+#### Python垃圾回收机制
+
+Python GC主要使用引用计数（reference counting）来跟踪和回收垃圾。在引用计数的基础上，通过“标记-清除”（mark and sweep）解决容器对象可能产生的循环引用问题，通过“分代回收”（generation collection）以空间换时间的方法提高垃圾回收效率
+* 引用计数
+* 标记-清除机制
+* 分代技术
+
+#### Python的[List](https://www.jianshu.com/p/J4U6rR)
+* 创建 list
+
+只要把逗号分隔的不同数据项，使用方括号括起来: `list = ['Google', 'Runoob', 1997, 2000]`
+> 与字符串的索引一样，列表索引从0开始；列表可以进行截取、组合等
+* 访问 list 中的元素
+```
+#  下标索引
+
+>>> listI=[0,1,2,3,4,5]
+>>> listI[0] #第一个元素
+0
+>>> listI[-2] #倒数第二个元素
+4
+
+#嵌套列表
+>>> list = [0,1,['a','b'],'zero']
+>>> list[3]
+'zero'
+>>> list[2]
+['a', 'b']
+>>> list[2][1] #第 3 个元素的第 2 个子元素。
+'b'
+```
+```
+#  切片
+
+>>> listC = ['a', 'b', 'c', 'd', 'e', 'f']
+>>> listC[1:]
+['b', 'c', 'd', 'e', 'f']
+>>> listC[-3:] #第 4 个元素后的所有元素。
+['d', 'e', 'f']
+>>> listC[1:4] #第 2 个元素到第 5 个元素前，但不包含第 5 个元素。
+['b', 'c', 'd']
+>>> listC[:] #所有元素
+['a', 'b', 'c', 'd', 'e', 'f']
+```
+* 增删改查 list 列表的元素
+```
+#  通过索引修改单个元素
+
+>>> list = ['Alex', 'Eric', 'Rain', 'Tom', 'Amy']
+>>> list.insert(3,"插队在tom前面")
+>>> print(list)
+['Alex', 'Eric', 'Rain', '插队在tom前面', 'Tom', 'Amy']
+
+>>> list[2] = '换个名字'
+>>> print(list)
+['Alex', 'Eric', '换个名字', '插队在tom前面', 'Tom', 'Amy']
+
+>>> list.append('加个新名字')
+>>> print(list)
+['Alex', 'Eric', '换个名字', '插队在tom前面', 'Tom', 'Amy', '加个新名字']
+```
+```
+#  切片修改多个元素
+
+>>> list = [1,2,3,4,5,6,7]
+>>> list[3:6]
+[4, 5, 6]
+>>> list[3:6] = [0,0,0]
+>>> list
+[1, 2, 3, 0, 0, 0, 7]
+```
+```
+#  删除 list 列表的元素
+
+#  .pop([index]) 删除并返回索引项，默认为最后一个
+>>> list
+[1, 2, 3, 0, 0, 0, 7]
+>>> list.pop()
+7
+>>> list
+[1, 2, 3, 0, 0, 0]
+>>> list.pop(2)
+3
+>>> list
+[1, 2, 0, 0, 0]
+
+
+#  .remove(value) 删除获取到的值: takes exactly one argument
+>>> myList = ['name','city','sex','age','sex']
+>>> myList.remove('sex')
+>>> myList
+['name', 'city', 'age', 'sex']
+
+
+#  .clear() 删除列表中的所有元素
+>>> myList = ['name','city','sex','age','sex']
+>>> myList.clear()
+>>> myList
+[]
+```
+```
+#  嵌套列表
+
+>>>a = ['a', 'b', 'c']
+>>> n = [1, 2, 3]
+>>> x = [a, n]
+>>> x
+[['a', 'b', 'c'], [1, 2, 3]]
+>>> x[0]
+['a', 'b', 'c']
+>>> x[0][1]
+'b'
+```
+```
+#  扩展
+
+>>> names
+['Alex', 'Tenglan', 'Rain', 'Tom', 'Amy']
+>>> b = [1,2,3]
+>>> names.extend(b)
+>>> names
+['Alex', 'Tenglan', 'Rain', 'Tom', 'Amy', 1, 2, 3]
+```
+```
+#  拷贝
+
+>>> names
+['Alex', 'Tenglan', 'Rain', 'Tom', 'Amy', 1, 2, 3]
+
+>>> name_copy = names.copy()
+>>> name_copy
+['Alex', 'Tenglan', 'Rain', 'Tom', 'Amy', 1, 2, 3]
+```
+```
+#  统计
+
+>>> names
+['Alex', 'Tenglan', 'Amy', 'Tom', 'Amy', 1, 2, 3]
+>>> names.count("Amy")
+2
+```
+```
+#  获取下标
+
+>>> names
+['Tom', 'Tenglan', 'Amy', 'Amy', 'Alex', '3', '2', '1']
+>>> names.index("Amy")
+2   #  只返回找到的第一个下标
+```
+* 排序 list 列表的元素
+```
+#  .reverse() 使列表的元素反向
+>>> myList
+[0, 1, 2, 3, 4, 5]
+>>> myList.reverse()
+>>> myList
+[5, 4, 3, 2, 1, 0]
+
+#  .sort(key=None, reverse=False)，3.0里不同数据类型不能放在一起排序
+>>> myList = [12,34,2,45,23,2,3]
+>>> myList.sort()
+>>> myList
+[2, 2, 3, 12, 23, 34, 45]
+```
+* 运算符操作列表
+```
+#  列表对 + 和 * 的操作符与字符串相似: + 号用于组合列表，* 号用于重复列表
+
+>>> listA = [1,2]
+>>> listB = ['a','b']
+>>> listA+listB
+[1, 2, 'a', 'b']
+
+>>> listA * 4
+[1, 2, 1, 2, 1, 2, 1, 2]
+```
+* list 常用函数
+```
+#  len(list)、max(list)、min(list)、list(seq)
+
+>>> list = [1,2,3,4,5]
+>>> len(list)
+5
+>>> max(list)
+5
+>>> min(list)
+1
+
+
+#  list(seq)将元组转换为列表
+>>> mySeq = ("a","zero",0,1)
+>>> mySeq
+('a', 'zero', 0, 1)
+>>> myList = list(mySeq)
+>>> myList
+['a', 'zero', 0, 1]
+```
+
+#### Python的 `is`
+
+`is` 是对比地址, `==` 是对比值
+
+#### read, readline和readlines
+```
+假设a.txt的内容如下所示：
+Hello
+Welcome
+What is your problem...
+```
+* read
+
+读取整个文件
+```
+f = open("a.txt")
+lines = f.read()
+print lines
+print(type(lines))
+f.close()
+```
+输出
+```
+Hello
+Welcome
+What is your problem...
+<type 'str'> #字符串类型
+```
+> 从文件当前位置起读取size个字节，若无参数size，则表示读取至文件结束为止，它范围为字符串对象
+* readline
+
+读取下一行,使用生成器方法
+```
+f = open("a.txt")
+line = f.readline()
+print(type(line))
+while line:
+ print line,
+ line = f.readline()
+f.close()
+```
+输出
+```
+<type 'str'>
+Hello
+Welcome
+What is your problem...
+```
+> 该方法每次读出一行内容，所以读取时占用内存小，比较适合大文件，该方法返回一个字符串对象
+* readlines
+
+读取整个文件到一个迭代器以供我们遍历
+```
+f = open("a.txt")
+lines = f.readlines()
+print(type(lines))
+for line in lines:
+ print line，
+f.close()
+```
+输出
+```
+<type 'list'>
+Hello
+Welcome
+What is your problem...
+```
+> 该方法读取整个文件所有行，保存在一个列表list变量中，每行作为一个元素，但读取大文件会比较占内存
+
+#### [Python2和3的区别](http://chenqx.github.io/2014/11/10/Key-differences-between-Python-2-7-x-and-Python-3-x/)
+
+#### [super init](https://github.com/taizilongxu/interview_python#29-super-init)
+
+#### [range and xrange](https://github.com/taizilongxu/interview_python#30-range-and-xrange)
+
